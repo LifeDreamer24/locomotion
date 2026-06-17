@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
@@ -17,9 +18,10 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class MixinLevelChunk {
 
     @WrapOperation(
-            method = "updateBlockEntityTicker",
+            method = {"updateBlockEntityTicker", "updateTicker", "method_31723", "m_156406_"},
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;getTicker(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/level/block/entity/BlockEntityType;)Lnet/minecraft/world/level/block/entity/BlockEntityTicker;")
     )
+    @Dynamic
     public <T extends BlockEntity> BlockEntityTicker<T> tickExtraOnClient(BlockState instance, Level level, BlockEntityType<T> blockEntityType, Operation<BlockEntityTicker<T>> original) {
         BlockEntityTicker<T> ticker = original.call(instance, level, blockEntityType);
 //        if (ticker == null) {

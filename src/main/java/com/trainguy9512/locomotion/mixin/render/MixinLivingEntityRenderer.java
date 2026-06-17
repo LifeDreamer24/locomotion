@@ -8,7 +8,6 @@ import com.trainguy9512.locomotion.animation.animator.JointAnimatorDispatcher;
 import com.trainguy9512.locomotion.animation.animator.entity.EntityJointAnimator;
 import com.trainguy9512.locomotion.animation.pose.Pose;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.*;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;

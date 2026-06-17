@@ -5,9 +5,9 @@ import com.trainguy9512.locomotion.animation.animator.block_entity.ChestJointAni
 import com.trainguy9512.locomotion.animation.animator.block_entity.ShulkerBoxJointAnimator;
 import com.trainguy9512.locomotion.animation.animator.entity.firstperson.FirstPersonJointAnimator;
 import com.trainguy9512.locomotion.config.LocomotionConfig;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -44,10 +44,24 @@ public class LocomotionMain {
 	private static void registerAnimators() {
 		JointAnimatorRegistry.registerFirstPersonPlayerJointAnimator(new FirstPersonJointAnimator());
 
-		JointAnimatorRegistry.registerBlockEntityJointAnimator(BlockEntityType.CHEST, new ChestJointAnimator<>());
-		JointAnimatorRegistry.registerBlockEntityJointAnimator(BlockEntityType.ENDER_CHEST, new ChestJointAnimator<>());
-		JointAnimatorRegistry.registerBlockEntityJointAnimator(BlockEntityType.TRAPPED_CHEST, new ChestJointAnimator<>());
-		JointAnimatorRegistry.registerBlockEntityJointAnimator(BlockEntityType.SHULKER_BOX, new ShulkerBoxJointAnimator());
+		registerChestAnimator("chest");
+		registerChestAnimator("ender_chest");
+		registerChestAnimator("trapped_chest");
+		JointAnimatorRegistry.registerBlockEntityJointAnimator(getBlockEntityType("shulker_box"), new ShulkerBoxJointAnimator());
+	}
+
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	private static void registerChestAnimator(String id) {
+		JointAnimatorRegistry.registerBlockEntityJointAnimator((BlockEntityType) getBlockEntityType(id), new ChestJointAnimator<>());
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T extends net.minecraft.world.level.block.entity.BlockEntity> BlockEntityType<T> getBlockEntityType(String id) {
+		BlockEntityType<T> type = (BlockEntityType<T>) BuiltInRegistries.BLOCK_ENTITY_TYPE.getValue(Identifier.withDefaultNamespace(id));
+		if (type == null) {
+			throw new IllegalStateException("Missing vanilla block entity type: " + id);
+		}
+		return type;
 	}
 
 	/*

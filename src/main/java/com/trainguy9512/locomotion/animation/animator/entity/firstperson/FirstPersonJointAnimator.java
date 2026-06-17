@@ -18,6 +18,7 @@ import com.trainguy9512.locomotion.animation.pose.function.montage.MontageManage
 import com.trainguy9512.locomotion.animation.util.Easing;
 import com.trainguy9512.locomotion.animation.util.TimeSpan;
 import com.trainguy9512.locomotion.animation.util.Transition;
+import com.trainguy9512.locomotion.util.LocomotionMultiVersionWrappers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.player.LocalPlayer;
@@ -238,7 +239,7 @@ public class FirstPersonJointAnimator implements LivingEntityJointAnimator<Local
         driverContainer.getDriver(FirstPersonDrivers.IS_CROUCHING).setValue(player.isCrouching());
         driverContainer.getDriver(FirstPersonDrivers.IS_UNDERWATER).setValue(player.isUnderWater() || (player.isInWater() && !player.onGround()));
         driverContainer.getDriver(FirstPersonDrivers.IS_PASSENGER).setValue(player.isPassenger());
-        driverContainer.getDriver(FirstPersonDrivers.HAS_SCREEN_OPEN).setValue(Minecraft.getInstance().screen != null);
+        driverContainer.getDriver(FirstPersonDrivers.HAS_SCREEN_OPEN).setValue(LocomotionMultiVersionWrappers.hasScreenOpen());
 
         boolean isSwimmingUnderwater = player.getPose() == Pose.SWIMMING
                 && player.isInWater()

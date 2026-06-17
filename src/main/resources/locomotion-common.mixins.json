@@ -1,10 +1,10 @@
 {
   "required": true,
   "minVersion": "0.8",
+  "refmap": "${mod_id}-common-refmap.json",
   "package": "com.trainguy9512.locomotion.mixin",
   "compatibilityLevel": "JAVA_17",
-  "mixins": [
-  ],
+  "mixins": [],
   "client": [
     "debug.MixinDefaultPlayerSkin",
     "game.MixinLevelChunk",
@@ -28,6 +28,6 @@
     "render.block_entity.MixinShulkerBoxRenderer"
   ],
   "injectors": {
-    "defaultRequire": 1
+    "defaultRequire": 0
   }
 }

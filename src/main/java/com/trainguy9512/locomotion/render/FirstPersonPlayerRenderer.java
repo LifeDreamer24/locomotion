@@ -10,6 +10,7 @@ import com.trainguy9512.locomotion.animation.animator.entity.firstperson.handpos
 import com.trainguy9512.locomotion.animation.data.AnimationDataContainer;
 import com.trainguy9512.locomotion.animation.joint.JointChannel;
 import com.trainguy9512.locomotion.animation.pose.ModelPartSpacePose;
+import com.trainguy9512.locomotion.util.LocomotionMultiVersionWrappers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.Model;
@@ -18,7 +19,9 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+//? if < 26 {
+/*import net.minecraft.client.renderer.block.BlockRenderDispatcher;*/
+//?}
 import net.minecraft.client.renderer.entity.*;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -51,8 +54,10 @@ public class FirstPersonPlayerRenderer implements RenderLayerParent<AvatarRender
 
     private final Minecraft minecraft;
     private final EntityRenderDispatcher entityRenderDispatcher;
-    private final ItemRenderer itemRenderer;
-    private final BlockRenderDispatcher blockRenderer;
+    //? if < 26 {
+    /*private final ItemRenderer itemRenderer;
+    private final BlockRenderDispatcher blockRenderer;*/
+    //?}
     private final ItemModelResolver itemModelResolver;
     private final JointAnimatorDispatcher jointAnimatorDispatcher;
 
@@ -64,8 +69,10 @@ public class FirstPersonPlayerRenderer implements RenderLayerParent<AvatarRender
     public FirstPersonPlayerRenderer(EntityRendererProvider.Context context) {
         this.minecraft = Minecraft.getInstance();
         this.entityRenderDispatcher = context.getEntityRenderDispatcher();
-        this.itemRenderer = minecraft.getItemRenderer();
-        this.blockRenderer = context.getBlockRenderDispatcher();
+        //? if < 26 {
+        /*this.itemRenderer = minecraft.getItemRenderer();
+        this.blockRenderer = context.getBlockRenderDispatcher();*/
+        //?}
         this.itemModelResolver = context.getItemModelResolver();
         this.jointAnimatorDispatcher = JointAnimatorDispatcher.getInstance();
     }
@@ -238,8 +245,7 @@ public class FirstPersonPlayerRenderer implements RenderLayerParent<AvatarRender
                 )
         );
 
-        this.minecraft.gameRenderer.getFeatureRenderDispatcher().renderAllFeatures();
-        this.minecraft.renderBuffers().bufferSource().endBatch();
+        LocomotionMultiVersionWrappers.renderAndFlushFeatureBuffers(this.minecraft);
     }
 
     private static ItemStack getItemStackInHandToRender(AnimationDataContainer dataContainer, AbstractClientPlayer localPlayer, InteractionHand hand) {

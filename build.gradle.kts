@@ -18,8 +18,12 @@ architectury.common(stonecutter.tree.branches.mapNotNull {
 })
 
 loom {
-	silentMojangMappingsLicense()
+	if (stonecutter.eval(minecraft, "<26")) silentMojangMappingsLicense()
 	accessWidenerPath = rootProject.file("src/main/resources/${prop("mod.id")}.accesswidener")
+
+	mixin {
+		defaultRefmapName.set("${prop("mod.id")}-common-refmap.json")
+	}
 
 	decompilers {
 		get("vineflower").apply { // Adds names to lambdas - useful for mixins
@@ -29,6 +33,9 @@ loom {
 }
 
 repositories {
+	// Local stub for net.fabricmc:intermediary:26.x (Fabric's published POM has wrong version 0.0.0)
+	maven(rootProject.file("local-maven"))
+
 	maven("https://maven.parchmentmc.org/")
 
 	maven("https://maven.terraformersmc.com/")
@@ -42,11 +49,20 @@ repositories {
 
 dependencies {
 	minecraft("com.mojang:minecraft:$minecraft")
-	mappings(loom.layered {
-		officialMojangMappings()
-		parchment("org.parchmentmc.data:parchment-${versionProp("parchment_minecraft_version")}:${versionProp("parchment_mappings_version")}@zip")
-//		mappings("dev.lambdaurora:${versionProp("yalmm")}")
-	})
+	if (stonecutter.eval(minecraft, ">=26")) {
+		// 26.1+ ships fully deobfuscated — use a local identity mapping (no renaming needed)
+		mappings(files("${rootProject.projectDir}/identity-mappings.jar"))
+	} else {
+		mappings(loom.layered {
+			officialMojangMappings()
+			val parchmentMcVersion = versionPropOrNull("parchment_minecraft_version")
+			val parchmentMappingsVersion = versionPropOrNull("parchment_mappings_version")
+			if (parchmentMcVersion != null && parchmentMappingsVersion != null) {
+				parchment("org.parchmentmc.data:parchment-$parchmentMcVersion:$parchmentMappingsVersion@zip")
+			}
+//			mappings("dev.lambdaurora:${versionProp("yalmm")}")
+		})
+	}
 	modImplementation("net.fabricmc:fabric-loader:${versionProp("fabric_loader")}")
 
 	// Mod implementations
@@ -54,12 +70,13 @@ dependencies {
 }
 
 tasks.processResources {
-	applyProperties(project, listOf("${prop("mod.id")}-common.mixin.json"))
+	applyProperties(project, listOf("${prop("mod.id")}-common.mixins.json"))
 }
 
 java {
 	withSourcesJar()
-	val java = if (stonecutter.eval(minecraft, ">=1.20.5"))
+	val java = if (stonecutter.eval(minecraft, ">=26"))
+		JavaVersion.VERSION_25 else if (stonecutter.eval(minecraft, ">=1.20.5"))
 		JavaVersion.VERSION_21 else JavaVersion.VERSION_17
 	targetCompatibility = java
 	sourceCompatibility = java

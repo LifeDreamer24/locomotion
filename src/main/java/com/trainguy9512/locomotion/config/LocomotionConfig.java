@@ -7,7 +7,7 @@ import com.google.gson.GsonBuilder;
 import com.trainguy9512.locomotion.LocomotionMain;
 import com.trainguy9512.locomotion.animation.animator.JointAnimator;
 import com.trainguy9512.locomotion.animation.animator.JointAnimatorDispatcher;
-import net.minecraft.client.Minecraft;
+import com.trainguy9512.locomotion.util.LocomotionMultiVersionWrappers;
 import net.minecraft.client.gui.screens.AlertScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -115,7 +115,7 @@ public class LocomotionConfig {
             return LocomotionConfigScreen::createConfigScreen;
         } else {
             return parent -> new AlertScreen(
-                    () -> Minecraft.getInstance().setScreen(parent),
+                    () -> LocomotionMultiVersionWrappers.setScreen(parent),
                     Component.translatable("locomotion.config.yacl_not_found.header"),
                     Component.translatable("locomotion.config.yacl_not_found.description"),
                     Component.translatable("locomotion.config.yacl_not_found.close"),

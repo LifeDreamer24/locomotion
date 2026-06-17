@@ -3,7 +3,7 @@
 plugins {
     id("dev.architectury.loom")
     id("architectury-plugin")
-    id("com.github.johnrengelman.shadow")
+    id("com.gradleup.shadow")
 }
 
 val loader = prop("loom.platform")!!
@@ -23,7 +23,11 @@ architectury {
 }
 
 loom {
-    silentMojangMappingsLicense()
+    if (stonecutter.eval(minecraft, "<26")) silentMojangMappingsLicense()
+
+    mixin {
+        defaultRefmapName.set("${prop("mod.id")}-fabric-refmap.json")
+    }
 
     decompilers {
         get("vineflower").apply { // Adds names to lambdas - useful for mixins
@@ -79,6 +83,9 @@ configurations {
 }
 
 repositories {
+    // Local stub for net.fabricmc:intermediary:26.x (Fabric's published POM has wrong version 0.0.0)
+    maven(rootProject.file("local-maven"))
+
     maven("https://maven.parchmentmc.org/")
 
     maven("https://maven.terraformersmc.com/")
@@ -92,11 +99,20 @@ repositories {
 
 dependencies {
     minecraft("com.mojang:minecraft:$minecraft")
-    mappings(loom.layered {
-        officialMojangMappings()
-        parchment("org.parchmentmc.data:parchment-${versionProp("parchment_minecraft_version")}:${versionProp("parchment_mappings_version")}@zip")
-//        mappings("dev.lambdaurora:${versionProp("yalmm")}")
-    })
+    if (stonecutter.eval(minecraft, ">=26")) {
+        // 26.1+ ships fully deobfuscated — use a local identity mapping (no renaming needed)
+        mappings(files("${rootProject.projectDir}/identity-mappings.jar"))
+    } else {
+        mappings(loom.layered {
+            officialMojangMappings()
+            val parchmentMcVersion = versionPropOrNull("parchment_minecraft_version")
+            val parchmentMappingsVersion = versionPropOrNull("parchment_mappings_version")
+            if (parchmentMcVersion != null && parchmentMappingsVersion != null) {
+                parchment("org.parchmentmc.data:parchment-$parchmentMcVersion:$parchmentMappingsVersion@zip")
+            }
+//            mappings("dev.lambdaurora:${versionProp("yalmm")}")
+        })
+    }
     modImplementation("net.fabricmc:fabric-loader:${versionProp("fabric_loader")}")
 
     commonBundle(project(common.path, "namedElements")) { isTransitive = false }
@@ -116,7 +132,7 @@ dependencies {
 }
 
 tasks.processResources {
-    applyProperties(project, listOf("fabric.mod.json", "${prop("mod.id")}-fabric.mixin.json"))
+    applyProperties(project, listOf("fabric.mod.json", "${prop("mod.id")}-fabric.mixins.json"))
 }
 
 tasks.shadowJar {
@@ -137,7 +153,8 @@ tasks.jar {
 
 java {
     withSourcesJar()
-    val java = if (stonecutter.eval(minecraft, ">=1.20.5"))
+    val java = if (stonecutter.eval(minecraft, ">=26"))
+        JavaVersion.VERSION_25 else if (stonecutter.eval(minecraft, ">=1.20.5"))
         JavaVersion.VERSION_21 else JavaVersion.VERSION_17
     targetCompatibility = java
     sourceCompatibility = java

@@ -3,7 +3,7 @@
 plugins {
     id("dev.architectury.loom")
     id("architectury-plugin")
-    id("com.github.johnrengelman.shadow")
+    id("com.gradleup.shadow")
 }
 
 val loader = prop("loom.platform")!!
@@ -24,6 +24,10 @@ architectury {
 
 loom {
     silentMojangMappingsLicense()
+
+    mixin {
+        defaultRefmapName.set("${prop("mod.id")}-forge-refmap.json")
+    }
 
     decompilers {
         get("vineflower").apply { // Adds names to lambdas - useful for mixins
@@ -94,7 +98,7 @@ dependencies {
 }
 
 tasks.processResources {
-    applyProperties(project, listOf("META-INF/mods.toml", "${prop("mod.id")}-forge.mixin.json", "pack.mcmeta"))
+    applyProperties(project, listOf("META-INF/mods.toml", "${prop("mod.id")}-forge.mixins.json", "pack.mcmeta"))
 }
 
 tasks.shadowJar {
@@ -115,7 +119,8 @@ tasks.jar {
 
 java {
     withSourcesJar()
-    val java = if (stonecutter.eval(minecraft, ">=1.20.5"))
+    val java = if (stonecutter.eval(minecraft, ">=26"))
+        JavaVersion.VERSION_25 else if (stonecutter.eval(minecraft, ">=1.20.5"))
         JavaVersion.VERSION_21 else JavaVersion.VERSION_17
     targetCompatibility = java
     sourceCompatibility = java

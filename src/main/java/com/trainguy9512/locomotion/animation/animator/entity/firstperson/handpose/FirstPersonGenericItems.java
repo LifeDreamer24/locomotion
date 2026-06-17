@@ -114,7 +114,6 @@ public class FirstPersonGenericItems {
     );
 
     public static final List<TagKey<Item>> BLOCK_ITEM_TAG_OVERRIDES = List.of(
-            ItemTags.COPPER_CHESTS,
             ItemTags.SHULKER_BOXES,
             ItemTags.SKULLS,
             ItemTags.BEDS
@@ -140,7 +139,9 @@ public class FirstPersonGenericItems {
     }
 
     private static boolean isDoorItem(ItemStack itemStack) {
-        return itemStack.is(ItemTags.DOORS);
+        // Door-specific first-person poses are currently disabled above; keep this
+        // helper independent from vanilla ItemTags because 26.x removed ItemTags.DOORS.
+        return false;
     }
 
     public static Identifier getCurrentBasePose(DriverGetter dataContainer, InteractionHand hand) {

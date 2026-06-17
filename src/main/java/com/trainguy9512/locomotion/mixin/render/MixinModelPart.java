@@ -6,6 +6,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -29,12 +30,14 @@ public class MixinModelPart implements MatrixModelPart {
         return this.locomotion$matrix4f;
     }
 
-    @Inject(method = "resetPose", at = @At("HEAD"))
+    @Inject(method = {"resetPose", "resetTransform", "method_41923", "m_233569_"}, at = @At("HEAD"), require = 0)
+    @Dynamic
     public void resetMatrix(CallbackInfo ci){
         this.locomotion$matrix4f = null;
     }
 
-    @Inject(method = "translateAndRotate", at = @At("HEAD"), cancellable = true)
+    @Inject(method = {"translateAndRotate", "applyTransform", "method_22703", "m_104299_"}, at = @At("HEAD"), cancellable = true, require = 0)
+    @Dynamic
     public void multiplyPoseStackWithMatrix(PoseStack poseStack, CallbackInfo ci){
         if(this.locomotion$matrix4f != null){
             poseStack.mulPose(this.locomotion$matrix4f.setTranslation(this.locomotion$matrix4f.getTranslation(new Vector3f()).div(16f)));
