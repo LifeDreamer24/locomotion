@@ -1,7 +1,6 @@
 package com.trainguy9512.locomotion.animation.data;
 
 import com.google.common.collect.Maps;
-import com.trainguy9512.locomotion.access.MatrixModelPart;
 import com.trainguy9512.locomotion.animation.animator.JointAnimator;
 import com.trainguy9512.locomotion.animation.driver.Driver;
 import com.trainguy9512.locomotion.animation.driver.VariableDriver;
@@ -16,10 +15,8 @@ import com.trainguy9512.locomotion.resource.LocomotionResources;
 import com.trainguy9512.locomotion.animation.util.Interpolator;
 import com.trainguy9512.locomotion.animation.util.TimeSpan;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.model.geom.ModelPart;
 
 import java.util.Map;
-import java.util.function.Function;
 
 public class AnimationDataContainer implements DriverGetter {
 
@@ -122,20 +119,7 @@ public class AnimationDataContainer implements DriverGetter {
     }
 
     public <S> void setupAnimWithAnimationPose(Model<S> model, float partialTicks){
-        model.resetPose();
-
         ModelPartSpacePose pose = this.getInterpolatedAnimationPose(partialTicks);
-        JointSkeleton jointSkeleton = this.getJointSkeleton();
-
-        Function<String, ModelPart> partLookup = model.root().createPartLookup();
-        jointSkeleton.getJoints().forEach(joint -> {
-            String modelPartIdentifier = jointSkeleton.getJointConfiguration(joint).modelPartIdentifier();
-            if (modelPartIdentifier != null) {
-                ModelPart modelPart = partLookup.apply(modelPartIdentifier);
-                if (modelPart != null) {
-                    ((MatrixModelPart)(Object) modelPart).locomotion$setMatrix(pose.getJointChannel(joint).getTransform());
-                }
-            }
-        });
+        pose.setupAnimOnModel(model);
     }
 }

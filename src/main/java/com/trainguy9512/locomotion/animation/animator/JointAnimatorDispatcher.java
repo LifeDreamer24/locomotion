@@ -2,33 +2,27 @@ package com.trainguy9512.locomotion.animation.animator;
 
 import com.google.common.collect.Maps;
 import com.trainguy9512.locomotion.LocomotionMain;
-import com.trainguy9512.locomotion.access.MatrixModelPart;
 import com.trainguy9512.locomotion.animation.animator.block_entity.BlockEntityJointAnimator;
 import com.trainguy9512.locomotion.animation.data.AnimationDataContainer;
 import com.trainguy9512.locomotion.animation.driver.DriverKey;
 import com.trainguy9512.locomotion.animation.driver.VariableDriver;
 import com.trainguy9512.locomotion.animation.pose.ModelPartSpacePose;
-import com.trainguy9512.locomotion.animation.pose.Pose;
-import com.trainguy9512.locomotion.animation.joint.skeleton.JointSkeleton;
-import com.trainguy9512.locomotion.animation.pose.ComponentSpacePose;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.Model;
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.*;
-import java.util.function.Function;
 
 public class JointAnimatorDispatcher {
     private static final JointAnimatorDispatcher INSTANCE = new JointAnimatorDispatcher();
 
-    private final WeakHashMap<UUID, AnimationDataContainer> entityAnimationDataContainerStorage;
+    private final HashMap<UUID, AnimationDataContainer> entityAnimationDataContainerStorage;
     private final HashMap<Long, AnimationDataContainer> blockEntityAnimationDataContainerStorage;
     private AnimationDataContainer firstPersonPlayerDataContainer;
     private ModelPartSpacePose interpolatedFirstPersonPlayerPose;
@@ -37,7 +31,7 @@ public class JointAnimatorDispatcher {
     private static DriverKey<VariableDriver<Identifier>> ENTITY_TYPE_DRIVER = DriverKey.of("entity_type", () -> VariableDriver.ofConstant(() -> Identifier.withDefaultNamespace("none")));
 
     public JointAnimatorDispatcher() {
-        this.entityAnimationDataContainerStorage = new WeakHashMap<>();
+        this.entityAnimationDataContainerStorage = Maps.newHashMap();
         this.blockEntityAnimationDataContainerStorage = Maps.newHashMap();
     }
 
@@ -55,20 +49,20 @@ public class JointAnimatorDispatcher {
     }
 
     public <T extends Entity, B extends BlockEntity> void tick(Iterable<T> entitiesForRendering) {
-//        this.tickEntityJointAnimators(entitiesForRendering);
+        this.tickEntityJointAnimators(entitiesForRendering);
         this.tickFirstPersonPlayerJointAnimator();
         this.flushBlockEntityDataContainersOutsideRadius();
     }
 
-//    public <T extends Entity> void tickEntityJointAnimators(Iterable<T> entitiesForRendering) {
-//        entitiesForRendering.forEach(entity ->
-//                JointAnimatorRegistry.getThirdPersonJointAnimator(entity).ifPresent(
-//                        jointAnimator -> this.getEntityAnimationDataContainer(entity).ifPresent(
-//                                dataContainer -> this.tickJointAnimator(jointAnimator, entity, dataContainer)
-//                        )
-//                )
-//        );
-//    }
+    public <T extends Entity> void tickEntityJointAnimators(Iterable<T> entitiesForRendering) {
+        entitiesForRendering.forEach(entity ->
+                JointAnimatorRegistry.getThirdPersonJointAnimator(entity).ifPresent(
+                        jointAnimator -> this.getEntityAnimationDataContainer(entity).ifPresent(
+                                dataContainer -> this.tickJointAnimator(jointAnimator, entity, dataContainer)
+                        )
+                )
+        );
+    }
 
     @SuppressWarnings("unchecked")
     public <T extends BlockEntity> void tickBlockEntityJointAnimator(Level level, BlockPos blockPos, BlockState blockState, T blockEntity) {
@@ -111,15 +105,15 @@ public class JointAnimatorDispatcher {
         dataContainer.postTick();
     }
 
-//    public <T extends Entity> Optional<AnimationDataContainer> getEntityAnimationDataContainer(T entity){
-//        UUID uuid = entity.getUUID();
-//        if(!this.entityAnimationDataContainerStorage.containsKey(uuid)){
-//            JointAnimatorRegistry.getThirdPersonJointAnimator(entity).ifPresent(jointAnimator ->
-//                    this.entityAnimationDataContainerStorage.put(uuid, this.createDataContainer(jointAnimator))
-//            );
-//        }
-//        return Optional.ofNullable(this.entityAnimationDataContainerStorage.get(uuid));
-//    }
+    public <T extends Entity> Optional<AnimationDataContainer> getEntityAnimationDataContainer(T entity){
+        UUID uuid = entity.getUUID();
+        if(!this.entityAnimationDataContainerStorage.containsKey(uuid)){
+            JointAnimatorRegistry.getThirdPersonJointAnimator(entity).ifPresent(jointAnimator ->
+                    this.entityAnimationDataContainerStorage.put(uuid, AnimationDataContainer.of(jointAnimator))
+            );
+        }
+        return Optional.ofNullable(this.entityAnimationDataContainerStorage.get(uuid));
+    }
 
 
 
@@ -130,7 +124,7 @@ public class JointAnimatorDispatcher {
         if (potentialJointAnimator.isPresent()) {
             BlockEntityJointAnimator<T> jointAnimator = potentialJointAnimator.get();
             AnimationDataContainer dataContainer = AnimationDataContainer.of(jointAnimator);
-            dataContainer.getDriver(BLOCK_ENTITY_TYPE_DRIVER).setValue(BlockEntityType.getKey(type));
+            dataContainer.getDriver(BLOCK_ENTITY_TYPE_DRIVER).setValue(BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(type));
             return Optional.of(dataContainer);
         }
         return Optional.empty();
@@ -151,7 +145,7 @@ public class JointAnimatorDispatcher {
     }
 
     private static boolean blockEntityIsEnabledInConfig(BlockEntityType<?> type) {
-        Identifier typeIdentifier = BlockEntityType.getKey(type);
+        Identifier typeIdentifier = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(type);
         assert typeIdentifier != null;
         return LocomotionMain.CONFIG.data().blockEntities.enabledBlockEntities.getOrDefault(typeIdentifier.toString(), true);
     }
@@ -178,7 +172,7 @@ public class JointAnimatorDispatcher {
             if (this.blockEntityAnimationDataContainerStorage.containsKey(packedBlockPos)) {
 
                 AnimationDataContainer dataContainer = this.blockEntityAnimationDataContainerStorage.get(packedBlockPos);
-                if (dataContainer.getDriverValue(BLOCK_ENTITY_TYPE_DRIVER) == BlockEntityType.getKey(type)) {
+                if (dataContainer.getDriverValue(BLOCK_ENTITY_TYPE_DRIVER) == BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(type)) {
                     // If the block is within range and its type matches the requested type, return it.
                     return Optional.of(dataContainer);
                 } else {

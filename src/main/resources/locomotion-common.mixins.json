@@ -21,9 +21,12 @@
     "render.MixinFishingHookRenderer",
     "render.MixinGameRenderer",
     "render.MixinItemInHandRenderer",
-    "render.MixinLivingEntityRenderState",
+    "render.MixinEntityRenderState",
+    "render.MixinEntityRenderer",
+    "render.MixinLivingEntityRenderer",
     "render.MixinModelFeatureRenderer",
     "render.MixinModelPart",
+    "render.layer.MixinElytraLayer",
     "render.block_entity.MixinChestRenderer",
     "render.block_entity.MixinShulkerBoxRenderer"
   ],

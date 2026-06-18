@@ -3,10 +3,12 @@ package com.trainguy9512.locomotion;
 import com.trainguy9512.locomotion.animation.animator.JointAnimatorRegistry;
 import com.trainguy9512.locomotion.animation.animator.block_entity.ChestJointAnimator;
 import com.trainguy9512.locomotion.animation.animator.block_entity.ShulkerBoxJointAnimator;
+import com.trainguy9512.locomotion.animation.animator.entity.ThirdPersonPlayerJointAnimator;
 import com.trainguy9512.locomotion.animation.animator.entity.firstperson.FirstPersonJointAnimator;
 import com.trainguy9512.locomotion.config.LocomotionConfig;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,8 +43,10 @@ public class LocomotionMain {
 	 */
 
 
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	private static void registerAnimators() {
 		JointAnimatorRegistry.registerFirstPersonPlayerJointAnimator(new FirstPersonJointAnimator());
+		JointAnimatorRegistry.registerEntityJointAnimator((EntityType) getEntityType("player"), new ThirdPersonPlayerJointAnimator());
 
 		registerChestAnimator("chest");
 		registerChestAnimator("ender_chest");
@@ -60,6 +64,15 @@ public class LocomotionMain {
 		BlockEntityType<T> type = (BlockEntityType<T>) BuiltInRegistries.BLOCK_ENTITY_TYPE.getValue(Identifier.withDefaultNamespace(id));
 		if (type == null) {
 			throw new IllegalStateException("Missing vanilla block entity type: " + id);
+		}
+		return type;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T extends net.minecraft.world.entity.Entity> EntityType<T> getEntityType(String id) {
+		EntityType<T> type = (EntityType<T>) BuiltInRegistries.ENTITY_TYPE.getValue(Identifier.withDefaultNamespace(id));
+		if (type == null) {
+			throw new IllegalStateException("Missing vanilla entity type: " + id);
 		}
 		return type;
 	}
